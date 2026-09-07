@@ -11,44 +11,58 @@ difficulty.
 
 ---
 
-## Putting it on the iPad
+## It is already online
 
-You need to serve these files over the web once. A local file opened straight
-from the Files app will not install properly — Safari only offers a real
-home-screen app for a page loaded over `http`/`https`.
+**https://ivephoton.github.io/starquest/**
 
-### The easy way: GitHub Pages (free, about five minutes)
+That address is served by GitHub Pages from this repository. Nothing needs to
+be set up again.
 
-1. Make a free account at [github.com](https://github.com).
-2. Create a new repository — call it anything, tick **Public**.
-3. Click **Add file → Upload files**, drag in *everything* from this folder,
-   and commit.
-4. Go to **Settings → Pages**, set **Source** to `Deploy from a branch`,
-   branch `main`, folder `/ (root)`, and save.
-5. Wait a minute. GitHub shows you a URL like
-   `https://yourname.github.io/starquest/`.
+### Putting it on an iPad
 
-### Then, on the iPad
-
-1. Open that URL **in Safari** (it must be Safari, not Chrome).
-2. Tap the **Share** button — the square with an arrow out of the top.
-3. Scroll down and tap **Add to Home Screen**, then **Add**.
+1. Open that URL **in Safari** — it must be Safari. Chrome on iOS cannot
+   install a web app.
+2. Let the page finish loading once. That first load is when the app copies
+   itself onto the iPad for offline use.
+3. Tap the **Share** button — the square with an arrow coming out of the top.
+4. Scroll down, tap **Add to Home Screen**, then **Add**.
 
 You now have a Star Quest icon on the home screen. Tapping it opens the game
 fullscreen with no address bar, exactly like an App Store app.
 
+Use the home-screen icon from then on, not the Safari tab. iOS keeps their
+saved progress separate, so stars earned in one will not show up in the other.
+
 ### Does it need the internet?
 
-Only the first time. A service worker caches the whole app — about 350 KB —
-on first load, so after that it runs with the iPad in aeroplane mode.
+Only that first load. A service worker caches the whole app — about 350 KB —
+so after that it runs with the iPad in aeroplane mode.
 
-### Other ways to host it
+Sound needs one tap before iOS will allow it. That is an Apple rule, not a
+bug. The first tap anywhere starts the music.
 
-Netlify Drop (`app.netlify.com/drop`) takes a drag-and-dropped folder and
-gives you a URL instantly, with no account. Any web host works. If you have a
-Mac on the same wifi, `python3 -m http.server` in this folder and then
-`http://<your-mac-ip>:8000` in Safari works too, though the app will only be
-offline-capable on `localhost` or `https`.
+---
+
+## Changing the game later
+
+Upload the changed files to this repository (**Add file → Upload files**, then
+**Commit changes**). GitHub Pages rebuilds in about a minute.
+
+**Then do this, or the iPad will ignore the update.** Open `sw.js` and bump
+the version on the third line:
+
+```js
+const CACHE = 'starquest-v1';   // → 'starquest-v2', then 'v3', and so on
+```
+
+Any iPad with the app installed holds a complete cached copy and serves that
+copy in preference to the network. It only throws the old copy away when it
+sees a cache name it does not recognise. Skip this and the game will look
+exactly as it did before, no matter how many times you reload — which is
+baffling if you have forgotten why.
+
+After bumping it, close the app on the iPad and reopen it twice: once to fetch
+the new version in the background, once to run it.
 
 ## What it does not do
 
@@ -63,9 +77,6 @@ same result: an icon, a fullscreen app, and offline play.
 - Double-tap zoom is disabled so a stray tap cannot throw off the layout
 - Respects the rounded corners and home indicator on newer iPads
 - Progress is saved on the device and survives closing the app
-
-Sound needs one tap before iOS will allow it — that is an Apple rule, not a
-bug. The first tap anywhere starts the music.
 
 ## The same content as the desktop version
 
