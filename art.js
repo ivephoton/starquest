@@ -194,7 +194,9 @@ export function columnSVG(a, b, op, answer) {
     p.push(t(colX[1], 34, String(at - 1), 'cm-mark'));
     p.push(t(colX[0], 34, String(ao + 10), 'cm-mark'));
   }
-  p.push(t(colX[1], 92, String(at), 'cm-digit'));
+  // Only write a tens digit if there is one — otherwise 3 + 5 would be set
+  // out as "03", which is not how anybody writes it.
+  if (a >= 10) p.push(t(colX[1], 92, String(at), 'cm-digit'));
   p.push(t(colX[0], 92, String(ao), 'cm-digit'));
   if (borrow) {
     p.push(`<line x1="88" y1="80" x2="132" y2="70" class="cm-strike"/>`);
