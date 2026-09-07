@@ -25,6 +25,9 @@ export function shuffle(a) {
 function addSteps(a, b, ans) {
   const ao = a % 10, bo = b % 10, at = Math.floor(a / 10), bt = Math.floor(b / 10);
   const ones = ao + bo;
+  // A sum that stays inside one digit has no tens column worth narrating.
+  if (a < 10 && b < 10 && ans < 10)
+    return [[`${a} + ${b} = ${ans}.`, `${a} + ${b} = ${ans}。`]];
   if (ones >= 10) {
     return [
       [`Ones: ${ao} + ${bo} = ${ones}. Write ${ones % 10}, carry the 1.`,
@@ -40,6 +43,8 @@ function addSteps(a, b, ans) {
 
 function subSteps(a, b, ans) {
   const ao = a % 10, bo = b % 10, at = Math.floor(a / 10), bt = Math.floor(b / 10);
+  if (a < 10 && b < 10)
+    return [[`${a} - ${b} = ${ans}.`, `${a} - ${b} = ${ans}。`]];
   if (ao < bo) {
     return [
       [`You cannot take ${bo} from ${ao}, so borrow a ten.`,
@@ -60,7 +65,14 @@ function subSteps(a, b, ans) {
 export function makeAdd(tier) {
   let a, b;
   if (tier === 0) {
-    const oa = ri(0, 7); a = ri(1, 8) * 10 + oa; b = ri(1, 9 - oa);
+    // A one- or two-digit number plus a one-digit one, never carrying. The
+    // plain single-digit sums come up often enough to stay familiar without
+    // the level turning into nothing else.
+    if (rng() < 0.4) {
+      a = ri(1, 8); b = ri(1, 9 - a);
+    } else {
+      const oa = ri(0, 7); a = ri(1, 8) * 10 + oa; b = ri(1, 9 - oa);
+    }
   } else if (tier === 1) {
     const oa = ri(0, 8), ob = ri(0, 9 - oa);
     const ta = ri(1, 7), tb = ri(1, 8 - ta);
@@ -84,7 +96,13 @@ export function makeAdd(tier) {
 export function makeSub(tier) {
   let a, b;
   if (tier === 0) {
-    const oa = ri(1, 9); a = ri(1, 9) * 10 + oa; b = ri(1, oa);
+    // The mirror of adding level 1: one- or two-digit take a one-digit, never
+    // borrowing, and never leaving nothing behind.
+    if (rng() < 0.4) {
+      a = ri(2, 9); b = ri(1, a - 1);
+    } else {
+      const oa = ri(1, 9); a = ri(1, 9) * 10 + oa; b = ri(1, oa);
+    }
   } else if (tier === 1) {
     const oa = ri(0, 9), ob = ri(0, oa);
     const tb = ri(1, 8), ta = ri(tb + 1, 9);
