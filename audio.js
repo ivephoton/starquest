@@ -4,7 +4,7 @@
 // iOS keeps audio locked until the user touches the screen, so everything
 // here waits for the first tap before starting.
 
-let ctx = null, master = null, musicGain = null, limiter = null;
+let ctx = null, master = null, musicBus = null, limiter = null;
 let musicOn = true, sfxOn = true, started = false, loopTimer = null;
 
 // The two bus levels. Everything below mixes relative to these, so this is
@@ -16,7 +16,6 @@ const MUSIC_LEVEL = 0.3;
 
 export function setMusic(on) {
   musicOn = on;
-  if (musicGain) musicGain.gain.value = on ? MUSIC_LEVEL : 0;
   if (on) startMusic(); else stopMusic();
 }
 export function setSfx(on) { sfxOn = on; }
@@ -51,9 +50,6 @@ export function unlock() {
   master = ctx.createGain();
   master.gain.value = MASTER_LEVEL;
   master.connect(limiter);
-  musicGain = ctx.createGain();
-  musicGain.gain.value = musicOn ? MUSIC_LEVEL : 0;
-  musicGain.connect(master);
   if (musicOn) startMusic();
 }
 
@@ -108,7 +104,7 @@ function deg(d) {
 }
 
 function scheduleLoop() {
-  if (!ctx || !musicOn) return;
+  if (!ctx || !musicOn || !musicBus) return;
   const beat = 60 / BPM;
   let t = ctx.currentTime + 0.2;
   const start = t;
@@ -116,13 +112,13 @@ function scheduleLoop() {
   sections.forEach((phrase, si) => {
     let bt = t;
     for (const [d, beats] of phrase) {
-      note(deg(d), bt, beats * beat * 0.9, 'triangle', 0.2, musicGain);
+      note(deg(d), bt, beats * beat * 0.9, 'triangle', 0.2, musicBus);
       bt += beats * beat;
     }
     const bars = Math.round((bt - t) / (beat * 4));
     for (let i = 0; i < bars; i++)
       note(deg(BASS[(si * 2 + i) % BASS.length] - 7), t + i * beat * 4,
-           beat * 3, 'sine', 0.14, musicGain);
+           beat * 3, 'sine', 0.14, musicBus);
     t = bt;
   });
   const total = t - start;
@@ -132,11 +128,21 @@ function scheduleLoop() {
 export function startMusic() {
   if (!ctx || !musicOn || started) return;
   started = true;
+  // Every run gets a bus of its own, so notes left over from an earlier run
+  // have nothing to play through. See stopMusic for why that matters.
+  musicBus = ctx.createGain();
+  musicBus.gain.value = MUSIC_LEVEL;
+  musicBus.connect(master);
   scheduleLoop();
 }
 
 export function stopMusic() {
   started = false;
   if (loopTimer) { clearTimeout(loopTimer); loopTimer = null; }
-  if (musicGain) musicGain.gain.value = 0;
+  // A run puts the whole 45-second piece into the schedule at once, and
+  // stopping cannot un-schedule it. Merely turning the gain down would leave
+  // those notes alive and waiting, so switching the music back on would play
+  // them on top of the new run — the same tune twice, out of step with
+  // itself. Detaching the bus cuts them off for good.
+  if (musicBus) { musicBus.disconnect(); musicBus = null; }
 }
