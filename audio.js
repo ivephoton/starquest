@@ -4,12 +4,19 @@
 // iOS keeps audio locked until the user touches the screen, so everything
 // here waits for the first tap before starting.
 
-let ctx = null, master = null, musicGain = null;
+let ctx = null, master = null, musicGain = null, limiter = null;
 let musicOn = true, sfxOn = true, started = false, loopTimer = null;
+
+// The two bus levels. Everything below mixes relative to these, so this is
+// the only place to touch if the whole app is too loud or too quiet.
+// A limiter on the end (see unlock) catches the peaks, so these can sit
+// well above 1 without the sound breaking up when notes land together.
+const MASTER_LEVEL = 2.2;
+const MUSIC_LEVEL = 0.3;
 
 export function setMusic(on) {
   musicOn = on;
-  if (musicGain) musicGain.gain.value = on ? 0.16 : 0;
+  if (musicGain) musicGain.gain.value = on ? MUSIC_LEVEL : 0;
   if (on) startMusic(); else stopMusic();
 }
 export function setSfx(on) { sfxOn = on; }
@@ -22,11 +29,30 @@ export function unlock() {
   try {
     ctx = new (window.AudioContext || window.webkitAudioContext)();
   } catch (e) { return; }
+
+  // iOS treats Web Audio as ambient sound, which the Ring/Silent switch
+  // mutes even at full volume. Declaring the page as playback opts out of
+  // that. Safari 16.4 and up; simply absent elsewhere, so guard it.
+  try {
+    if (navigator.audioSession) navigator.audioSession.type = 'playback';
+  } catch (e) { /* older iOS: the silent switch still wins */ }
+
+  // A limiter on the very end. Several notes often overlap — a chord, or an
+  // effect landing on top of the music — and without this their sum would
+  // clip and crackle as soon as the levels were raised to something audible.
+  limiter = ctx.createDynamicsCompressor();
+  limiter.threshold.value = -6;
+  limiter.knee.value = 0;
+  limiter.ratio.value = 20;
+  limiter.attack.value = 0.003;
+  limiter.release.value = 0.25;
+  limiter.connect(ctx.destination);
+
   master = ctx.createGain();
-  master.gain.value = 0.9;
-  master.connect(ctx.destination);
+  master.gain.value = MASTER_LEVEL;
+  master.connect(limiter);
   musicGain = ctx.createGain();
-  musicGain.gain.value = musicOn ? 0.16 : 0;
+  musicGain.gain.value = musicOn ? MUSIC_LEVEL : 0;
   musicGain.connect(master);
   if (musicOn) startMusic();
 }
