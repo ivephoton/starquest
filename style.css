@@ -182,8 +182,13 @@ button:disabled { opacity: .45; box-shadow: 0 6px 0 rgba(0,0,0,.12); }
 .cm-strike { stroke: var(--coral-d); stroke-width: 5; }
 .dots-img { width: clamp(120px, 26vw, 300px); height: auto; }
 
-.hanzi { display: block; }
+/* A block-level SVG has a width of its own, so the parent's text-align does
+   nothing to it — it needs auto side margins to sit under the pinyin. */
+.hanzi { display: block; margin-inline: auto; }
 .strip { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; }
+/* ...except inside the stroke strip, where auto margins on a flex item would
+   absorb the free space and pull the little grids apart. */
+.strip .hanzi { margin-inline: 0; }
 
 table.report { width: 100%; border-collapse: collapse;
                font-size: clamp(13px, 1.7vw, 19px); }
