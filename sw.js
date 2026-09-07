@@ -1,6 +1,6 @@
 // Caches everything on first visit so the app works with no internet at all.
 // Bump CACHE when files change, so an old copy is replaced rather than kept.
-const CACHE = 'starquest-v3';
+const CACHE = 'starquest-v4';
 const FILES = [
   './', './index.html', './style.css', './main.js', './content.js',
   './progress.js', './art.js', './audio.js', './data.js',
