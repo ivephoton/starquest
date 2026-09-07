@@ -9,11 +9,11 @@ export const MASTER_MIN = 8;
 export const MASTER_ACC = 0.82;
 
 export const TIERS = {
-  add: [['Two-digit plus one-digit', '两位数加一位数'],
+  add: [['Adding a one-digit number', '加一位数'],
         ['Two-digit plus two-digit', '两位数加两位数'],
         ['Carrying over ten', '进位加法'],
         ['Bigger carrying sums', '较大的进位加法']],
-  sub: [['Two-digit take one-digit', '两位数减一位数'],
+  sub: [['Taking away a one-digit number', '减一位数'],
         ['Two-digit take two-digit', '两位数减两位数'],
         ['Borrowing from the tens', '退位减法'],
         ['Bigger borrowing sums', '较大的退位减法']],
