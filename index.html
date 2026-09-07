@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Star Quest</title>
+<!-- viewport-fit=cover lets the app use the whole iPad screen, and
+     user-scalable=no stops a double-tap zooming the board -->
+<meta name="viewport" content="width=device-width, initial-scale=1,
+      viewport-fit=cover, user-scalable=no, maximum-scale=1">
+<meta name="theme-color" content="#7ec8f0">
+<!-- these three are what make Safari's "Add to Home Screen" open it
+     fullscreen, with no address bar, like an installed app -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Star Quest">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app"></div>
+<script type="module" src="main.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () =>
+    navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+</script>
+</body>
+</html>

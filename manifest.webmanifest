@@ -1,0 +1,17 @@
+{
+  "name": "Star Quest - Maths, Spelling & Chinese",
+  "short_name": "Star Quest",
+  "description": "Maths, English spelling and Chinese characters for early primary school.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#bfe8fb",
+  "theme_color": "#7ec8f0",
+  "icons": [
+    { "src": "icon-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
