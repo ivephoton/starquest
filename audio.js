@@ -22,9 +22,18 @@ export function setSfx(on) { sfxOn = on; }
 export function isMusicOn() { return musicOn; }
 export function isSfxOn() { return sfxOn; }
 
+/** Bring the sound back after the page was put away, music included. */
+function wake() {
+  if (!ctx) return;
+  if (ctx.state !== 'suspended') { if (musicOn) startMusic(); return; }
+  // iOS refuses to resume outside a user gesture, so if this is knocked back
+  // the next tap comes through unlock and tries again.
+  ctx.resume().then(() => { if (musicOn) startMusic(); }).catch(() => {});
+}
+
 /** Called from the first touch: iOS will not make a sound before that. */
 export function unlock() {
-  if (ctx) { if (ctx.state === 'suspended') ctx.resume(); return; }
+  if (ctx) { wake(); return; }
   try {
     ctx = new (window.AudioContext || window.webkitAudioContext)();
   } catch (e) { return; }
@@ -146,3 +155,18 @@ export function stopMusic() {
   // itself. Detaching the bus cuts them off for good.
   if (musicBus) { musicBus.disconnect(); musicBus = null; }
 }
+
+// Go quiet the moment the page is put away — switched to another tab, the
+// window minimised, the app sent to the background, or the browser quit. A
+// run has up to forty-five seconds of notes already in the schedule, so
+// without this the music carries on playing to an empty room.
+function sleep() {
+  if (!ctx) return;
+  stopMusic();
+  ctx.suspend().catch(() => {});
+}
+
+document.addEventListener('visibilitychange',
+  () => (document.visibilityState === 'hidden' ? sleep() : wake()));
+// pagehide is the one iOS can be relied on for when an app is closed outright.
+window.addEventListener('pagehide', sleep);
